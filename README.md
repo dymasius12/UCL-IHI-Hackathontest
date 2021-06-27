@@ -9,8 +9,11 @@ We were tasked with tackling a public health problem using public data sets and 
 ### The team 
 
 Tina L Yao [Github](github.com/Ti-Yao)
+
 Dymasius Sitepu [Github](github.com/dymasius12)
+
 Sam Butler [Github](github.com/PorkPies)
+
 Oj Akhigbe [Github](github.com/OjTriesHisBest)
 
 ### How to use this application 
@@ -19,11 +22,11 @@ This uses [streamlit](streamlit.io) as a framework for the dashboard and heroku 
 
 To use streamlit, you can run the following code from the command line: 
 
-'pip install streamlit' 
+`pip install streamlit`
 
 and when you want to run the application locally, use: 
 
-'streamlit run [filename].py'
+`streamlit run [filename].py`
 
 Just make sure you have all of the relevant modules installed in the python script otherwise you'll run into errors! You can find the requirements needed in the requirements.txt file. 
 

@@ -6,9 +6,9 @@ from PIL import Image
 import seaborn as sns
 import plotly.express as px
 import json
-
 from urllib.request import urlopen
 import json
+
 sns.set_style("whitegrid")
 sns.set_palette("husl")
 st.set_option('deprecation.showPyplotGlobalUse', False)
@@ -95,7 +95,11 @@ space()
 ##########  bar chart for the disease in a given year
 st.write("YEARLY")
 st.write("You can see how respiratory illness death rate has changed over the years by sliding the time bar.")
-year = st.slider('What year?', df.reset_index().Year.min(), df.reset_index().Year.max())
+
+year = st.slider('What year?', int(df.reset_index().Year.min()), int(df.reset_index().Year.max()))
+
+
+
 
 bar_df = pd.DataFrame()
 bar_df['Death Rate'] = df.loc[state_option,year][diseases].values
@@ -195,7 +199,7 @@ code = {'Alabama': 'AL',
         'Wyoming': 'WY'}
 
 map_option = st.selectbox("What would you like to map?", diseases + pollution )
-map_year = st.slider('What year?', df.reset_index().Year.min(), df.reset_index().Year.max(), key="map")
+map_year = st.slider('What year?', int(df.reset_index().Year.min()), int(df.reset_index().Year.max()), key="map")
 
 map_df = df.copy().reset_index()
 
@@ -214,120 +218,3 @@ fig = px.choropleth(map_df, #
                    )
 #fig.show()
 st.plotly_chart(fig)
-
-
-
-
-
-
-#
-# import geopandas as gpd
-# import geoplot
-# import pandas as pd
-#
-#
-# usa = gpd.read_file('states.shp')
-# usa =  usa.rename(columns = {'STATE_NAME':'State Name'})
-# usa = usa[['State Name','geometry']]
-# map_df = df.reset_index().set_index('Year').loc[year].set_index('State Name')
-# map_df = df.loc[state_names].merge(usa, on = 'State Name')
-# gdf = gpd.GeoDataFrame(map_df, geometry='geometry')
-# gdf.plot('Asthma')
-# st.pyplot()
-
-
-# import altair as alt
-# from vega_datasets import data
-#
-# import pandas as pd
-# import altair as alt
-# from vega_datasets import data
-# states = alt.topo_feature(data.us_10m.url, feature='states')
-# states
-#
-# #unemp_data = pd.read_csv('http://vega.github.io/vega-datasets/data/unemployment.tsv',sep='\t')
-# #unemp_data = unemp_data.head(50)
-# # df = df.reset_index()
-# # unemp_data = df.loc[df['State Name'] == state_names]
-# #unemp_data['rate'] = df['Ozone'].values
-# # US states background
-# coords = pd.read_csv('coords.csv')
-# coords.to_json('coords.json')
-# states = alt.topo_feature(data.us_10m.url, 'states')
-# states
-# capitals = data.us_state_capitals.url
-# capitals
-# # US states background
-# background = alt.Chart(states).mark_geoshape(
-#     fill='lightgray',
-#     stroke='white'
-# ).properties(
-#     title='US State Capitols',
-#     width=650,
-#     height=400
-# ).project('albersUsa')
-#
-# # Points and text
-# hover = alt.selection(type='single', on='mouseover', nearest=True,
-#                       fields=['lat', 'lon'])
-#
-# base = alt.Chart(coords).encode(
-#     longitude='lon:Q',
-#     latitude='lat:Q',
-# )
-#
-# text = base.mark_text(dy=-5, align='right').encode(
-#     alt.Text('city', type='nominal'),
-#     opacity=alt.condition(~hover, alt.value(0), alt.value(1))
-# )
-#
-# points = base.mark_point().encode(
-#     color=alt.value('black'),
-#     size=alt.condition(~hover, alt.value(30), alt.value(100))
-# ).add_selection(hover)
-#
-# background + points + text
-# # .transform_lookup(
-# #     lookup='id',
-# #     from_=alt.LookupData(unemp_data, 'State Name', ['Asthma'])
-# # ).project(
-# #     type='albersUsa'
-# # ).properties(
-# #     width=500,
-# #     height=300,
-# #     title='Unemployment by County')
-# # chart
-
-
-# from plotly.figure_factory._county_choropleth import create_choropleth
-# import pandas as pd
-#
-# NE_states = ['Connecticut', 'Maine', 'Massachusetts', 'New Hampshire', 'Rhode Island', 'Vermont']
-# df_sample = pd.read_csv('https://raw.githubusercontent.com/plotly/datasets/master/minoritymajority.csv')
-# df_sample_r = df_sample[df_sample['STNAME'].isin(NE_states)]
-#
-#
-# values = df_sample_r['TOT_POP'].tolist()
-# fips = df_sample_r['FIPS'].tolist()
-#
-# colorscale = [
-#     'rgb(68.0, 1.0, 84.0)',
-#     'rgb(66.0, 64.0, 134.0)',
-#     'rgb(38.0, 130.0, 142.0)',
-#     'rgb(63.0, 188.0, 115.0)',
-#     'rgb(216.0, 226.0, 25.0)'
-# ]
-#
-# fig = create_choropleth(
-#     fips=fips, values=values,
-#     scope=NE_states, county_outline={'color': 'rgb(255,255,255)', 'width': 0.5},
-#     legend_title='Population per county'
-#
-# )
-# fig.update_layout(
-#     legend_x = 0,
-#     annotations = {'x': -0.12, 'xanchor': 'left'}
-# )
-#
-# fig.layout.template = None
-# fig.show()

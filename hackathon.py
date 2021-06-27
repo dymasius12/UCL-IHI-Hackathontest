@@ -6,9 +6,9 @@ from PIL import Image
 import seaborn as sns
 import plotly.express as px
 import json
+import altair as alt
 from urllib.request import urlopen
 import json
-
 sns.set_style("whitegrid")
 sns.set_palette("husl")
 st.set_option('deprecation.showPyplotGlobalUse', False)
@@ -52,94 +52,15 @@ pollution =['Carbon monoxide',
 st.title("US Respiratory Illness Death Rate vs Air Quality Dashboard")
 st.write("Welcome! :grin:")
 st.write("This interactive website visualises the affect of air quality on respiratory health using data from the US.")
-st.write("<- To get started you can change which US State you want to look at on the left hand side.")
 
 space()
 
 
-
-
-
-
-#### line graph plots #########
-st.write("COMPARISON")
-st.write("You can compare a range of different illnesses and air quality metrics and the correlation between the two will be calculated.")
-
-state_option = st.sidebar.selectbox("Which state do you want to look at?",df.reset_index()["State Name"].unique())
-resp_illness = st.selectbox("Which illness do you want to focus on?", diseases )
-air_quality = st.selectbox("Which air quality metric do you want to compare against?", pollution)
-
-comparison_df = df.loc[state_option][[resp_illness, air_quality]]
-corr_df = df.corr()
-correlation = corr_df .loc[resp_illness][air_quality]
-
-sns.lineplot(x=resp_illness, y=air_quality, data=comparison_df,legend = 'auto', label='Correlation = {:.2f}'.format(correlation))
-st.pyplot()
-space()
-
-##### correlation plot #########
-
-# Generate a mask for the upper triangle
-mask = np.triu(np.ones_like(corr_df , dtype=bool))
-# Set up the matplotlib figure
-f, ax = plt.subplots(figsize=(11, 9))
-# Generate a custom diverging colormap
-cmap = sns.diverging_palette(230, 20, as_cmap=True)
-# Draw the heatmap with the mask and correct aspect ratio
-sns.heatmap(corr_df , mask=mask, cmap=cmap, vmax=.3, center=0,
-            square=True, linewidths=.5, cbar_kws={"shrink": .5})
-st.pyplot()
-
-space()
-
-##########  bar chart for the disease in a given year
-st.write("YEARLY")
-st.write("You can see how respiratory illness death rate has changed over the years by sliding the time bar.")
-
-year = st.slider('What year?', int(df.reset_index().Year.min()), int(df.reset_index().Year.max()))
-
-
-
-
-bar_df = pd.DataFrame()
-bar_df['Death Rate'] = df.loc[state_option,year][diseases].values
-bar_df['Respiratory Disease'] = diseases
-plt.figure()
-sns.barplot(x='Respiratory Disease', y='Death Rate', data=bar_df)
-plt.xticks(rotation=90)
-plt.ylim(0,60)
-st.pyplot()
-space()
-
-
-
-
-
-#### future line graph plots #########
-st.write("FORECASTING")
-st.write("We forecasted future values using a temporal convolutional neural network that is trained on over thirty years of data to predict into 2025, the machine learning model architecture is seen below.")
-
-image = Image.open('TCN.png')
-st.image(image, caption='Sequence to sequence machine learning model used')
-
-st.write("By selecting different metrics you can see how respiratory illness death rate and air quality will change in the future.")
-
-
-air_quality_option = st.multiselect("Which future values would you like to see?", pollution + ['Chronic respiratory disease death rate'],default=['Chronic respiratory disease death rate'])
-future_df = future_df.rename(columns = {'Chronic respiratory diseases':'Chronic respiratory disease death rate'})
-try: ## prevents errors if there is no option selected
-    line_df = future_df.loc[state_option][air_quality_option]
-    line_df.index = pd.to_datetime(line_df.index, format="%Y")
-    sns.lineplot(data = line_df)
-    st.pyplot()
-except:
-    pass
-space()
 
 
 ####### map ####
-st.write("MAP")
-st.write("You can see how the death rate of respiratory illnesses changes over time.")
+st.write("MAP 🗺️")
+st.write("You can see how the death rate of respiratory illnesses or air pollution changes over time across the US.")
 
 
 with urlopen('https://raw.githubusercontent.com/plotly/datasets/master/geojson-counties-fips.json') as response:
@@ -218,3 +139,123 @@ fig = px.choropleth(map_df, #
                    )
 #fig.show()
 st.plotly_chart(fig)
+
+space()
+
+
+st.write("⬅️ You can change which US State you want to look at for the rest of the plots.")
+
+space()
+
+
+#### line graph plots #########
+st.write("COMPARISON")
+st.write("You can compare a range of different illnesses and air quality metrics and the correlation between the two will be calculated.")
+
+state_option = st.sidebar.selectbox("Which state do you want to look at?",df.reset_index()["State Name"].unique())
+resp_illness = st.selectbox("Which illness do you want to focus on?", diseases )
+air_quality = st.selectbox("Which air quality metric do you want to compare against?", pollution)
+
+comparison_df = df.loc[state_option][[resp_illness, air_quality]]
+corr_df = df.corr()
+correlation = corr_df .loc[resp_illness][air_quality]
+
+sns.lineplot(x=resp_illness, y=air_quality, data=comparison_df,legend = 'auto', label='Correlation = {:.2f}'.format(correlation))
+st.pyplot()
+space()
+
+
+### bubble_chart
+
+# bubble_df = df.copy()
+# bubble_df = bubble_df.loc[state_option]
+# # bubble_df['Year'] = pd.to_datetime(bubble_df.reset_index()["Year"], format="%Y")
+# # bubble_df.index
+# bubble_df = bubble_df.reset_index()
+# bubble_df = bubble_df[["Year", resp_illness, air_quality]]
+# bubble_df
+# resp_illness
+# air_quality
+# # bubble_df = reset_df.loc[reset_df["State Name"] == state_option]
+# # bubble_df["Year"] = pd.to_datetime(bubble_df["Year"], format="%Y")
+# # bubble_df = bubble_df[["Year", resp_illness, air_quality]]
+# #
+#
+# # st.dataframe(bubble_df)
+#
+# c = alt.Chart(bubble_df).mark_circle().encode(
+#        x="Year", y=resp_illness, size=air_quality, color=air_quality, tooltip=air_quality).properties(
+#        width=800, height=500, title=f"Comparison between {air_quality} and {resp_illness} for the state of {state_option}")
+# c.configure_title(fontSize=20,
+# anchor="middle", fontWeight="bold")
+# st.altair_chart(c, use_container_width=False)
+
+
+bubble_df = df.reset_index()
+
+bubble_df = bubble_df.loc[bubble_df["State Name"] == state_option]
+bubble_df["Year"] = pd.to_datetime(bubble_df["Year"], format="%Y")
+bubble_df = bubble_df[["Year", resp_illness, air_quality]]
+
+# st.dataframe(bubble_df)
+
+c = alt.Chart(bubble_df).mark_circle().encode(
+       x="Year", y=resp_illness, size=air_quality, color=air_quality, tooltip=air_quality).properties(
+       width=800, height=500, title=f"Comparison between {air_quality} and {resp_illness} for the state of {state_option}")
+c.configure_title(fontSize=20,
+anchor="middle", fontWeight="bold")
+st.altair_chart(c, use_container_width=False)
+##### correlation plot #########
+
+# Generate a mask for the upper triangle
+mask = np.triu(np.ones_like(corr_df , dtype=bool))
+# Set up the matplotlib figure
+f, ax = plt.subplots(figsize=(11, 9))
+# Generate a custom diverging colormap
+cmap = sns.diverging_palette(230, 20, as_cmap=True)
+# Draw the heatmap with the mask and correct aspect ratio
+sns.heatmap(corr_df , mask=mask, cmap=cmap, vmax=.3, center=0,
+            square=True, linewidths=.5, cbar_kws={"shrink": .5})
+st.pyplot()
+
+space()
+
+##########  bar chart for the disease in a given year
+st.write("YEARLY 📊")
+st.write("You can see how respiratory illness death rate has changed over the years by sliding the time bar.")
+year = st.slider('What year?', int(df.reset_index().Year.min()), int(df.reset_index().Year.max()))
+
+bar_df = pd.DataFrame()
+bar_df['Death Rate'] = df.loc[state_option,year][diseases].values
+bar_df['Respiratory Disease'] = diseases
+plt.figure()
+sns.barplot(x='Respiratory Disease', y='Death Rate', data=bar_df)
+plt.xticks(rotation=90)
+plt.ylim(0,60)
+st.pyplot()
+space()
+
+
+
+
+
+#### future line graph plots #########
+st.write("FORECASTING 📈")
+st.write("We forecasted future values using a temporal convolutional neural network that is trained on over thirty years of data to predict into 2025, the machine learning model architecture is seen below.")
+
+image = Image.open('TCN.png')
+st.image(image, caption='Sequence to sequence machine learning model used')
+
+st.write("By selecting different metrics you can see how respiratory illness death rate and air quality will change in the future.")
+
+
+air_quality_option = st.multiselect("Which future values would you like to see?", pollution + ['Chronic respiratory disease death rate'],default=['Chronic respiratory disease death rate'])
+future_df = future_df.rename(columns = {'Chronic respiratory diseases':'Chronic respiratory disease death rate'})
+try: ## prevents errors if there is no option selected
+    line_df = future_df.loc[state_option][air_quality_option]
+    line_df.index = pd.to_datetime(line_df.index, format="%Y")
+    sns.lineplot(data = line_df)
+    st.pyplot()
+except:
+    pass
+space()

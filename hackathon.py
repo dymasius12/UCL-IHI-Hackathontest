@@ -34,6 +34,20 @@ df = add_US(df)
 future_df = pd.read_csv("future.csv")
 future_df = add_US(future_df)
 
+def add_units(variable = 'Asthma'):
+    if variable in diseases:
+        string = ' (Death Rate)'
+    else:
+        string = ' (' + units[variable] + ')'
+    return string
+
+units = {'Carbon monoxide': 'Parts per mil',
+ 'Nitrogen dioxide (NO2)': 'Parts per bil',
+ 'Outdoor Temperature': 'Degrees Fahrenheit',
+ 'Ozone': 'Parts per mil',
+ 'PM10 Total 0-10um STP': 'Micrograms/cubic meter (25 C)',
+ 'Sulfur dioxide': 'Parts per bil'}
+
 diseases = ['Asbestosis', 'Asthma',
        'Chronic obstructive pulmonary disease', 'Chronic respiratory diseases',
        'Coal workers pneumoconiosis',
@@ -161,49 +175,28 @@ corr_df = df.corr()
 correlation = corr_df .loc[resp_illness][air_quality]
 
 sns.lineplot(x=resp_illness, y=air_quality, data=comparison_df,legend = 'auto', label='Correlation = {:.2f}'.format(correlation))
+plt.xlabel(resp_illness + add_units())
+plt.ylabel(air_quality + add_units(air_quality))
 st.pyplot()
 space()
 
 
 ### bubble_chart
 
-# bubble_df = df.copy()
-# bubble_df = bubble_df.loc[state_option]
-# # bubble_df['Year'] = pd.to_datetime(bubble_df.reset_index()["Year"], format="%Y")
-# # bubble_df.index
-# bubble_df = bubble_df.reset_index()
-# bubble_df = bubble_df[["Year", resp_illness, air_quality]]
-# bubble_df
-# resp_illness
-# air_quality
-# # bubble_df = reset_df.loc[reset_df["State Name"] == state_option]
-# # bubble_df["Year"] = pd.to_datetime(bubble_df["Year"], format="%Y")
-# # bubble_df = bubble_df[["Year", resp_illness, air_quality]]
-# #
-#
-# # st.dataframe(bubble_df)
-#
-# c = alt.Chart(bubble_df).mark_circle().encode(
-#        x="Year", y=resp_illness, size=air_quality, color=air_quality, tooltip=air_quality).properties(
-#        width=800, height=500, title=f"Comparison between {air_quality} and {resp_illness} for the state of {state_option}")
-# c.configure_title(fontSize=20,
-# anchor="middle", fontWeight="bold")
-# st.altair_chart(c, use_container_width=False)
-
-
 bubble_df = df.reset_index()
 
 bubble_df = bubble_df.loc[bubble_df["State Name"] == state_option]
 bubble_df["Year"] = pd.to_datetime(bubble_df["Year"], format="%Y")
 bubble_df = bubble_df[["Year", resp_illness, air_quality]]
-
+bubble_df = bubble_df.rename(columns = {resp_illness:resp_illness + add_units(resp_illness), air_quality: air_quality + add_units(air_quality)})
 # st.dataframe(bubble_df)
 
 c = alt.Chart(bubble_df).mark_circle().encode(
-       x="Year", y=resp_illness, size=air_quality, color=air_quality, tooltip=air_quality).properties(
+       x="Year", y=resp_illness + add_units(resp_illness), size=air_quality + add_units(air_quality), color=air_quality + add_units(air_quality), tooltip=air_quality + add_units(air_quality)).properties(
        width=800, height=500, title=f"Comparison between {air_quality} and {resp_illness} for the state of {state_option}")
 c.configure_title(fontSize=20,
 anchor="middle", fontWeight="bold")
+plt.figure()
 st.altair_chart(c, use_container_width=False)
 ##### correlation plot #########
 
@@ -214,8 +207,9 @@ f, ax = plt.subplots(figsize=(11, 9))
 # Generate a custom diverging colormap
 cmap = sns.diverging_palette(230, 20, as_cmap=True)
 # Draw the heatmap with the mask and correct aspect ratio
-sns.heatmap(corr_df , mask=mask, cmap=cmap, vmax=.3, center=0,
-            square=True, linewidths=.5, cbar_kws={"shrink": .5})
+h = sns.heatmap(corr_df , mask=mask, cmap=cmap, vmax=.3, center=0,
+            square=True, linewidths=.5, cbar_kws={"shrink": .5,'label': 'Correlation'})
+h.tick_params(labelsize=15)
 st.pyplot()
 
 space()
@@ -249,10 +243,13 @@ st.image(image, caption='Sequence to sequence machine learning model used')
 st.write("By selecting different metrics you can see how respiratory illness death rate and air quality will change in the future.")
 
 
-air_quality_option = st.multiselect("Which future values would you like to see?", pollution + ['Chronic respiratory disease death rate'],default=['Chronic respiratory disease death rate'])
-future_df = future_df.rename(columns = {'Chronic respiratory diseases':'Chronic respiratory disease death rate'})
+air_quality_option = st.multiselect("Which future values would you like to see?", pollution + ['Chronic respiratory disease' + add_units(resp_illness)],default=['Chronic respiratory disease' + add_units(resp_illness)])
+future_df = future_df.rename(columns = {'Chronic respiratory diseases':'Chronic respiratory disease' + add_units(resp_illness)})
 try: ## prevents errors if there is no option selected
     line_df = future_df.loc[state_option][air_quality_option]
+    for air in air_quality_option:
+        if air != 'Chronic respiratory disease (Death Rate)':
+            line_df = line_df.rename(columns = {air:air+add_units(air)})
     line_df.index = pd.to_datetime(line_df.index, format="%Y")
     sns.lineplot(data = line_df)
     st.pyplot()
@@ -264,7 +261,7 @@ space()
 ## The sidebar expandable button
 
 with st.sidebar.beta_expander("Click here to learn more about this webpage"):
-       st.markdown("""This dashboard combines **data visualisation**, **machine learning** and **data analysis** to give an insight into 
+       st.markdown("""This dashboard combines **data visualisation**, **machine learning** and **data analysis** to give an insight into
        air quality and respiratory illness in the US.""")
 
        st.markdown("You can find the Github Repo on [Dymasius12](github.com/dymasius12/UCL-IHI-Hackathontest)")

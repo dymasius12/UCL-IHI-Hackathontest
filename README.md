@@ -3,4 +3,8 @@
 testing git repo for the web app deployment
 
 
-created by dymasius@stanford.edu
+created by:
+Tina L Yao,
+Sam,
+Oj Akhigbe,
+Dymasius.

@@ -5,6 +5,6 @@ testing git repo for the web app deployment
 
 created by:
 Tina L Yao,
-Sam,
+Sam Butler,
 Oj Akhigbe,
 Dymasius.

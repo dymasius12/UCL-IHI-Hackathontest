@@ -259,3 +259,12 @@ try: ## prevents errors if there is no option selected
 except:
     pass
 space()
+
+
+## The sidebar expandable button
+
+with st.sidebar.beta_expander("Click here to learn more about this webpage"):
+       st.markdown("""This dashboard combines **data visualisation**, **machine learning** and **data analysis** to give an insight into 
+       air quality and respiratory illness in the US.""")
+
+       st.markdown("You can find the Github Repo on [Dymasius12](github.com/dymasius12/UCL-IHI-Hackathontest)")

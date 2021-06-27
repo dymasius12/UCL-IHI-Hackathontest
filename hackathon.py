@@ -142,9 +142,10 @@ map_df['Code'] = map_df['State Name'].map(code)
 min_val = map_df[map_option].min()
 max_val = map_df[map_option].max()
 map_df = map_df.loc[map_df['Year'] == map_year]
+map_df = map_df.rename(columns = {map_option:add_units(map_option)})
 fig = px.choropleth(map_df, #
                     locations='Code', #plot based on state code
-                    color=map_option, #chose a column to show values
+                    color=add_units(map_option), #chose a column to show values
                     color_continuous_scale='spectral_r', #color scheme
                     range_color=(min_val , max_val),
                     hover_name='State Name', #label options
